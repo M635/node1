@@ -1,10 +1,10 @@
 import { create } from "zustand";
 import type { FileTab, EncodingType } from "../types/file";
+import { useSettingStore } from "./settingStore";
 
 interface FileStore {
   tabs: FileTab[];
   activeTabId: string | null;
-  recentFiles: string[];
 
   openTab: (tab: FileTab) => void;
   closeTab: (id: string) => void;
@@ -29,7 +29,6 @@ function generateId(): string {
 export const useFileStore = create<FileStore>((set, get) => ({
   tabs: [],
   activeTabId: null,
-  recentFiles: [],
 
   openTab: (tab) =>
     set((state) => {
@@ -119,13 +118,9 @@ export const useFileStore = create<FileStore>((set, get) => ({
       return { tabs: sorted };
     }),
 
-  addRecentFile: (path) =>
-    set((state) => ({
-      recentFiles: [
-        path,
-        ...state.recentFiles.filter((p) => p !== path),
-      ].slice(0, 20),
-    })),
+  addRecentFile: (path) => {
+    useSettingStore.getState().addRecentFile(path);
+  },
 
   getActiveTab: () => {
     const state = get();

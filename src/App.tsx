@@ -59,8 +59,9 @@ import type { EncodingType } from "./types/file";
 
 export default function App() {
   const {
-    tabs, activeTabId, openTab, closeTab, updateTab, updateContent, markClean, getActiveTab, addRecentFile, recentFiles,
+    tabs, activeTabId, openTab, closeTab, updateTab, updateContent, markClean, getActiveTab, addRecentFile,
   } = useFileStore();
+  const { recentFiles } = useSettingStore();
   const { isDark, setIsDark, toggleBookmark } = useEditorStore();
   const { toggleSearchPanel, toggleReplacePanel, toggleFindInFiles } = useSearchStore();
   const { themeMode } = useSettingStore();
@@ -160,7 +161,7 @@ export default function App() {
       let content = tab.content;
       const settings = useSettingStore.getState();
       if (settings.trimTrailingWhitespaceOnSave) {
-        content = content.split("\n").map((line) => line.replace(/\s+$/, "")).join("\n");
+        content = content.replace(/\s+\n/g, "\n");
       }
       if (settings.ensureFinalNewline && !content.endsWith("\n")) {
         content += "\n";
@@ -228,7 +229,7 @@ export default function App() {
         let content = tab.content;
         const settings = useSettingStore.getState();
         if (settings.trimTrailingWhitespaceOnSave) {
-          content = content.split("\n").map((line) => line.replace(/\s+$/, "")).join("\n");
+          content = content.replace(/\s+\n/g, "\n");
         }
         if (settings.ensureFinalNewline && !content.endsWith("\n")) {
           content += "\n";
@@ -281,7 +282,7 @@ export default function App() {
       let content = tab.content;
       const settings = useSettingStore.getState();
       if (settings.trimTrailingWhitespaceOnSave) {
-        content = content.split("\n").map((line) => line.replace(/\s+$/, "")).join("\n");
+        content = content.replace(/\s+\n/g, "\n");
       }
       if (settings.ensureFinalNewline && !content.endsWith("\n")) {
         content += "\n";
@@ -620,10 +621,6 @@ export default function App() {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "R") {
         e.preventDefault();
         setShowTextTransform(true);
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === "Tab") {
-        e.preventDefault();
-        setShowDocSwitcher(true);
       }
       if ((e.metaKey || e.ctrlKey) && (e.key === "=" || e.key === "+")) {
         e.preventDefault();

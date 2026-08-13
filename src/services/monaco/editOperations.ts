@@ -54,26 +54,78 @@ export class EditOperations {
   static deleteBlankLines(editor: Editor): void {
     const model = editor.getModel();
     if (!model) return;
+    const lineCount = model.getLineCount();
+    if (lineCount <= 1) return;
     const text = model.getValue();
     const lines = text.split("\n");
-    const filtered = lines.filter((line, i) => !(line.trim() === "" && (i === 0 || lines[i - 1].trim() === "")));
-    model.setValue(filtered.join("\n"));
+    const keepIdx = new Set<number>();
+    for (let i = 0; i < lines.length; i++) {
+      if (!(lines[i].trim() === "" && (i === 0 || lines[i - 1].trim() === ""))) {
+        keepIdx.add(i);
+      }
+    }
+    // Build edits in reverse so line numbers stay valid
+    const edits: Monaco.editor.IIdentifiedSingleEditOperation[] = [];
+    for (let i = lineCount - 1; i >= 0; i--) {
+      if (!keepIdx.has(i)) {
+        edits.push({
+          range: {
+            startLineNumber: i + 1,
+            startColumn: 1,
+            endLineNumber: i + 1,
+            endColumn: 1,
+          } as Monaco.IRange,
+          text: "",
+        });
+      }
+    }
+    if (edits.length > 0) editor.executeEdits("delete-blank-lines", edits);
   }
 
   static trimTrailingWhitespace(editor: Editor): void {
     const model = editor.getModel();
     if (!model) return;
-    const text = model.getValue();
-    const lines = text.split("\n").map((line) => line.replace(/\s+$/, ""));
-    model.setValue(lines.join("\n"));
+    const lineCount = model.getLineCount();
+    const edits: Monaco.editor.IIdentifiedSingleEditOperation[] = [];
+    for (let i = 1; i <= lineCount; i++) {
+      const line = model.getLineContent(i);
+      const trimmed = line.replace(/\s+$/, "");
+      if (trimmed !== line) {
+        edits.push({
+          range: {
+            startLineNumber: i,
+            startColumn: trimmed.length + 1,
+            endLineNumber: i,
+            endColumn: line.length + 1,
+          } as Monaco.IRange,
+          text: "",
+        });
+      }
+    }
+    if (edits.length > 0) editor.executeEdits("trim-trailing", edits);
   }
 
   static trimLeadingWhitespace(editor: Editor): void {
     const model = editor.getModel();
     if (!model) return;
-    const text = model.getValue();
-    const lines = text.split("\n").map((line) => line.replace(/^\s+/, ""));
-    model.setValue(lines.join("\n"));
+    const lineCount = model.getLineCount();
+    const edits: Monaco.editor.IIdentifiedSingleEditOperation[] = [];
+    for (let i = 1; i <= lineCount; i++) {
+      const line = model.getLineContent(i);
+      const trimmed = line.replace(/^\s+/, "");
+      if (trimmed !== line) {
+        edits.push({
+          range: {
+            startLineNumber: i,
+            startColumn: 1,
+            endLineNumber: i,
+            endColumn: line.length - trimmed.length + 1,
+          } as Monaco.IRange,
+          text: "",
+        });
+      }
+    }
+    if (edits.length > 0) editor.executeEdits("trim-leading", edits);
   }
 
   static toUpperCase(editor: Editor): void {
@@ -212,14 +264,30 @@ export class EditOperations {
   static removeDuplicateLines(editor: Editor): void {
     const model = editor.getModel();
     if (!model) return;
-    const text = model.getValue();
-    const lines = text.split("\n");
+    const lineCount = model.getLineCount();
     const seen = new Set<string>();
-    const result: string[] = [];
-    for (const line of lines) {
-      if (!seen.has(line)) { seen.add(line); result.push(line); }
+    const removeIdx = new Set<number>();
+    for (let i = 0; i < lineCount; i++) {
+      const line = model.getLineContent(i + 1);
+      if (seen.has(line)) removeIdx.add(i);
+      else seen.add(line);
     }
-    model.setValue(result.join("\n"));
+    if (removeIdx.size === 0) return;
+    const edits: Monaco.editor.IIdentifiedSingleEditOperation[] = [];
+    for (let i = lineCount - 1; i >= 0; i--) {
+      if (removeIdx.has(i)) {
+        edits.push({
+          range: {
+            startLineNumber: i + 1,
+            startColumn: 1,
+            endLineNumber: i + 1,
+            endColumn: 1,
+          } as Monaco.IRange,
+          text: "",
+        });
+      }
+    }
+    editor.executeEdits("remove-duplicates", edits);
   }
 
   static sortLinesByLength(editor: Editor, descending: boolean = false): void {
@@ -278,13 +346,29 @@ export class EditOperations {
         : new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     } catch { return; }
 
-    const text = model.getValue();
-    const lines = text.split("\n");
-    const filtered = lines.filter((line) => {
+    const lineCount = model.getLineCount();
+    const keepIdx = new Set<number>();
+    for (let i = 0; i < lineCount; i++) {
+      const line = model.getLineContent(i + 1);
       const matches = regex.test(line);
-      return keepMatching ? matches : !matches;
-    });
-    model.setValue(filtered.join("\n"));
+      if (keepMatching ? matches : !matches) keepIdx.add(i);
+    }
+    if (keepIdx.size === lineCount) return;
+    const edits: Monaco.editor.IIdentifiedSingleEditOperation[] = [];
+    for (let i = lineCount - 1; i >= 0; i--) {
+      if (!keepIdx.has(i)) {
+        edits.push({
+          range: {
+            startLineNumber: i + 1,
+            startColumn: 1,
+            endLineNumber: i + 1,
+            endColumn: 1,
+          } as Monaco.IRange,
+          text: "",
+        });
+      }
+    }
+    if (edits.length > 0) editor.executeEdits("filter-lines", edits);
   }
 
   static mergeLines(editor: Editor, separator: string = " "): void {

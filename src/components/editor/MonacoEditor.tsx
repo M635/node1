@@ -668,17 +668,23 @@ export function MonacoEditor({
 
   const resolvedLanguage = language || getLanguageFromPath(path);
 
-  // 智能高亮（光标处单词全文档高亮）
+  // 智能高亮（光标处单词全文档高亮，带节流避免大文件卡顿）
   useEffect(() => {
     const editor = editorRef.current;
     const monaco = monacoRef.current;
     if (!editor || !monaco) return;
 
     let smartDecorations: string[] = [];
-    const handler = editor.onDidChangeCursorPosition((e) => {
+    let pendingCleanup: (() => void) | null = null;
+    const THROTTLE_MS = 150;
+    let lastRun = 0;
+
+    const runHighlight = () => {
       const model = editor.getModel();
       if (!model) return;
-      const word = model.getWordAtPosition(e.position);
+      const pos = editor.getPosition();
+      if (!pos) return;
+      const word = model.getWordAtPosition(pos);
       if (!word || word.word.length < 2) {
         smartDecorations = editor.deltaDecorations(smartDecorations, []);
         return;
@@ -700,9 +706,24 @@ export function MonacoEditor({
         }
       }
       smartDecorations = editor.deltaDecorations(smartDecorations, matches);
+    };
+
+    const handler = editor.onDidChangeCursorPosition((e) => {
+      const now = performance.now();
+      const elapsed = now - lastRun;
+      if (pendingCleanup) { pendingCleanup(); pendingCleanup = null; }
+      if (elapsed < THROTTLE_MS) {
+        pendingCleanup = setTimeout(runHighlight, THROTTLE_MS - elapsed) as unknown as () => void;
+      } else {
+        lastRun = now;
+        runHighlight();
+      }
     });
 
-    return () => handler.dispose();
+    return () => {
+      if (pendingCleanup) clearTimeout(pendingCleanup as unknown as number);
+      handler.dispose();
+    };
   }, []);
 
   // 代码片段 Tab 展开
