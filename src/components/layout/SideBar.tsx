@@ -3,7 +3,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
 import { useFileStore } from "../../stores/fileStore";
 import { useI18n } from "../../stores/i18nStore";
-import { getFileName, getFileExtension } from "../../utils/fileUtils";
+import { getFileName, getFileExtension, normalizePath } from "../../utils/fileUtils";
 import { getLanguageFromPath } from "../../services/monaco/languages";
 
 interface FileNode {
@@ -35,7 +35,7 @@ export function SideBar({ onOpenFile }: SideBarProps) {
         })
         .map(([name, isDir]) => ({
           name,
-          path: dirPath + "/" + name,
+          path: normalizePath(dirPath + "/" + name),
           is_dir: isDir,
           children: isDir ? [] : undefined,
           expanded: false,

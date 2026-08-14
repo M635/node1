@@ -366,16 +366,25 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const settings = useSettingStore.getState();
+    const intervalMs = Math.max(10000, (settings.autoSaveInterval || 60) * 1000);
     const interval = setInterval(() => {
-      const tab = getActiveTab();
-      if (tab?.is_dirty && tab.path && !tab.is_new && !tab.readonly) {
+      const state = useFileStore.getState();
+      let savedAny = false;
+      for (const tab of state.tabs) {
+        if (!tab.is_dirty || !tab.path || tab.is_new || tab.readonly) continue;
         saveFileService(tab.path, tab.content, tab.encoding).then(() => {
-          markClean(tab.id);
+          useFileStore.getState().markClean(tab.id);
         }).catch(() => {});
+        savedAny = true;
       }
-    }, 30000);
+      // Also save session if any tab was dirty
+      if (savedAny) {
+        saveSessionNow().catch(() => {});
+      }
+    }, intervalMs);
     return () => clearInterval(interval);
-  }, [getActiveTab, markClean]);
+  }, [saveSessionNow]);
 
   const handleCloseTab = useCallback(async (id: string) => {
     const tab = tabs.find((t) => t.id === id);
@@ -853,7 +862,9 @@ export default function App() {
     })();
   }, []);
 
-  const platformClass = typeof navigator !== "undefined" && /Mac/.test(navigator.platform) ? "platform-mac" : "platform-win";
+  const platformClass = typeof navigator !== "undefined"
+    ? (/Mac/.test(navigator.platform) ? "platform-mac" : /Win/.test(navigator.platform) || /Windows/.test(navigator.platform) ? "platform-win" : "platform-linux")
+    : "platform-win";
 
   return (
     <div className={`app ${platformClass} ${isDark ? "dark" : "light"} ${postItMode ? "postit-mode" : ""}`} onDrop={handleDrop} onDragOver={handleDragOver}>

@@ -21,6 +21,10 @@ interface SettingStore {
   ensureFinalNewline: boolean;
   autoDetectIndent: boolean;
   showIndentGuides: boolean;
+  autoSaveInterval: number;
+  wrapLongLines: boolean;
+  showPrintMargin: boolean;
+  printMarginColumn: number;
 
   setFontSize: (size: number) => void;
   setFontFamily: (family: string) => void;
@@ -40,6 +44,10 @@ interface SettingStore {
   setEnsureFinalNewline: (enable: boolean) => void;
   setAutoDetectIndent: (enable: boolean) => void;
   setShowIndentGuides: (enable: boolean) => void;
+  setAutoSaveInterval: (interval: number) => void;
+  setWrapLongLines: (wrap: boolean) => void;
+  setShowPrintMargin: (show: boolean) => void;
+  setPrintMarginColumn: (col: number) => void;
   resetToDefaults: () => void;
 }
 
@@ -62,6 +70,10 @@ export const useSettingStore = create<SettingStore>((set) => ({
   ensureFinalNewline: true,
   autoDetectIndent: true,
   showIndentGuides: true,
+  autoSaveInterval: 60,
+  wrapLongLines: false,
+  showPrintMargin: true,
+  printMarginColumn: 80,
 
   setFontSize: (size) => set({ fontSize: size }),
   setFontFamily: (family) => set({ fontFamily: family }),
@@ -88,6 +100,10 @@ export const useSettingStore = create<SettingStore>((set) => ({
   setEnsureFinalNewline: (enable) => set({ ensureFinalNewline: enable }),
   setAutoDetectIndent: (enable) => set({ autoDetectIndent: enable }),
   setShowIndentGuides: (enable) => set({ showIndentGuides: enable }),
+  setAutoSaveInterval: (interval) => set({ autoSaveInterval: interval }),
+  setWrapLongLines: (wrap) => set({ wrapLongLines: wrap }),
+  setShowPrintMargin: (show) => set({ showPrintMargin: show }),
+  setPrintMarginColumn: (col) => set({ printMarginColumn: col }),
   resetToDefaults: () =>
     set({
       fontSize: defaultEditorConfig.fontSize,

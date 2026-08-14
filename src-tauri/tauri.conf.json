@@ -21,13 +21,22 @@
         "fullscreen": false,
         "decorations": true,
         "transparent": false,
+        "focused": true,
+        "dragDropEnabled": true,
+        "visible": true,
         "titleBarStyle": "Overlay",
-        "hiddenTitle": true,
+        "hiddenTitle": false,
         "trafficLightPosition": { "x": 12, "y": 12 }
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "dangerousRemoteDomainIpcAccess": [
+        {
+          "domains": ["localhost"],
+          "plugins": ["@tauri-apps/store", "@tauri-apps/api/all"]
+        }
+      ]
     },
     "macOSPrivateApi": true
   },
@@ -52,7 +61,8 @@
       "minimumSystemVersion": "10.15",
       "exceptionDomain": "",
       "signingIdentity": null,
-      "entitlements": null
+      "entitlements": null,
+      "dsstore": false
     },
     "windows": {
       "webviewInstallMode": { "type": "embedBootstrapper" },
@@ -61,12 +71,31 @@
         "languages": ["SimpChinese", "English"],
         "displayLanguageSelector": true,
         "installerIcon": "icons/icon.ico",
-        "startMenuFolder": "MarkPT"
+        "startMenuFolder": "MarkPT",
+        "license": "",
+        "installPath": "C:\\Program Files\\MarkPT",
+        "runAfterFinish": true,
+        "permissions": {
+          "executionPolicy": "AllowAll"
+        }
+      },
+      "taint": {
+        "enabled": false
       }
     },
     "linux": {
-      "deb": { "depends": [] },
-      "appimage": { "bundleMediaFramework": false }
+      "deb": {
+        "depends": [],
+        "section": "utility",
+        "priority": "optional"
+      },
+      "appimage": {
+        "bundleMediaFramework": false,
+        "fields": {
+          "Keywords": "editor;code;text;notepad;",
+          "Type": "Application"
+        }
+      }
     }
   }
 }

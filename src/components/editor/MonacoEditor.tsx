@@ -43,6 +43,7 @@ export function MonacoEditor({
     fontSize, fontFamily, tabSize, insertSpaces, wordWrap,
     showLineNumbers, showWhitespace, showMinimap, folding,
     bracketPairColorization, autoIndent, showIndentGuides,
+    wrapLongLines, showPrintMargin, printMarginColumn,
   } = useSettingStore();
   const { searchQuery, replaceQuery, isRegex, caseSensitive } = useSearchStore();
   const { t } = useI18n();
@@ -864,7 +865,7 @@ export function MonacoEditor({
     fontSize, fontFamily,
     lineHeight: Math.round(fontSize * 1.4),
     tabSize, insertSpaces,
-    wordWrap: wordWrap ? "on" : "off",
+    wordWrap: wordWrap ? "on" : wrapLongLines ? "bounded" : "off",
     lineNumbers: showLineNumbers ? "on" : "off",
     renderWhitespace: showWhitespace ? "all" : "boundary",
     minimap: { enabled: showMinimap },

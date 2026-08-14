@@ -1,4 +1,5 @@
 export function getFileName(path: string): string {
+  // Normalize all path separators to forward slash for consistent handling
   const normalized = path.replace(/\\/g, "/");
   const parts = normalized.split("/");
   return parts[parts.length - 1] || "untitled";
@@ -18,7 +19,18 @@ export function getDirectory(path: string): string {
 }
 
 export function normalizePath(path: string): string {
+  // Normalize to forward slashes for cross-platform comparison
   return path.replace(/\\/g, "/");
+}
+
+export function joinPaths(...parts: string[]): string {
+  // Cross-platform path joining using forward slashes
+  return parts.filter(Boolean).join("/").replace(/\/+/g, "/");
+}
+
+export function formatPathForDisplay(path: string): string {
+  // Use native separators for display on each platform
+  return path.replace(/\\/g, "\\");
 }
 
 export function formatFileSize(bytes: number): string {
@@ -48,4 +60,10 @@ export function detectLanguageFromName(name: string): string {
   if (lower === "makefile" || lower === "gnumakefile") return "makefile";
   if (lower === "dockerfile" || lower.startsWith("dockerfile.")) return "dockerfile";
   return "";
+}
+
+export function getParentPath(path: string): string {
+  const normalized = normalizePath(path);
+  const idx = normalized.lastIndexOf("/");
+  return idx > 0 ? normalized.slice(0, idx) : "";
 }

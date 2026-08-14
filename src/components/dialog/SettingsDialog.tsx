@@ -39,6 +39,14 @@ export function SettingsDialog({ onClose }: SettingsDialogProps) {
     setTrimTrailingWhitespaceOnSave,
     setEnsureFinalNewline,
     setAutoDetectIndent,
+    autoSaveInterval,
+    wrapLongLines,
+    showPrintMargin,
+    printMarginColumn,
+    setAutoSaveInterval,
+    setWrapLongLines,
+    setShowPrintMargin,
+    setPrintMarginColumn,
     resetToDefaults,
   } = useSettingStore();
   const { language, setLanguage, t } = useI18n();
@@ -192,6 +200,29 @@ export function SettingsDialog({ onClose }: SettingsDialogProps) {
                 onChange={(e) => setEnsureFinalNewline(e.target.checked)}
               />
             </div>
+          </div>
+
+          <div className="settings-section">
+            <h3>{t("settings.autoSave")}</h3>
+            <div className="settings-row">
+              <label>{t("settings.autoSaveInterval")}</label>
+              <input type="number" min="10" max="300" step="10" value={autoSaveInterval} onChange={(e) => setAutoSaveInterval(parseInt(e.target.value) || 60)} />
+              <span>秒</span>
+            </div>
+            <div className="settings-row">
+              <label>{t("settings.wrapLongLines")}</label>
+              <input type="checkbox" checked={wrapLongLines} onChange={(e) => setWrapLongLines(e.target.checked)} />
+            </div>
+            <div className="settings-row">
+              <label>{t("settings.printMargin")}</label>
+              <input type="checkbox" checked={showPrintMargin} onChange={(e) => setShowPrintMargin(e.target.checked)} />
+            </div>
+            {showPrintMargin && (
+              <div className="settings-row">
+                <label>{t("settings.printMarginCol")}</label>
+                <input type="number" min="40" max="200" value={printMarginColumn} onChange={(e) => setPrintMarginColumn(parseInt(e.target.value) || 80)} />
+              </div>
+            )}
           </div>
 
           <div className="settings-section">

@@ -251,6 +251,11 @@ const translations: Record<string, Record<Language, string>> = {
   "search.matchCount": { zh: "个匹配", en: "matches" },
   "search.fileCount": { zh: "个文件", en: "files" },
   "search.truncated": { zh: "(已截断)", en: "(truncated)" },
+  "settings.autoSave": { zh: "自动保存", en: "Auto Save" },
+  "settings.autoSaveInterval": { zh: "自动保存间隔（秒）", en: "Auto-save interval (seconds)" },
+  "settings.wrapLongLines": { zh: "长行换行显示", en: "Wrap long lines" },
+  "settings.printMargin": { zh: "显示打印边界", en: "Show print margin" },
+  "settings.printMarginCol": { zh: "打印边界列数", en: "Print margin column" },
 };
 
 interface I18nStore {
