@@ -1,6 +1,5 @@
-use tauri::{AppHandle, Emitter, Manager};
-use tauri::menu::{Menu, MenuItem, MenuVec, Submenu};
-use tauri::Accelerator;
+use tauri::{AppHandle, Emitter};
+use tauri::menu::{Menu, MenuItem, Submenu};
 
 fn tr(lang: &str, zh: &str, en: &str) -> &'static str {
     if lang == "en" {
@@ -10,36 +9,24 @@ fn tr(lang: &str, zh: &str, en: &str) -> &'static str {
     }
 }
 
-/// Platform-aware accelerator: Cmd on Mac, Ctrl on Windows/Linux
-fn acc(keys: &str) -> Option<Accelerator> {
-    // Accept strings like "CmdOrControl+KeyS" or "Ctrl+S"
-    // Tauri 2.x Accelerator parsing is limited, so we use a simple approach
-    Accelerator::new(keys).ok()
-}
-
 macro_rules! m {
     ($app:expr, $id:literal, $label:expr) => {
         MenuItem::with_id($app, $id, $label, true, None::<&str>)
     };
-    ($app:expr, $id:literal, $label:expr, $acc:expr) => {
-        MenuItem::with_id_and_accelerator($app, $id, $label, true, $acc)
-    };
 }
 
 pub fn build_menu(app_handle: &AppHandle, lang: &str) -> tauri::Result<()> {
-    let a = |keys: &str| acc(keys);
-
     let file_menu = Submenu::with_items(app_handle, tr(lang, "文件", "File"), true, &[
         &m!(app_handle, "new", tr(lang, "新建", "New"))?,
         &m!(app_handle, "open", tr(lang, "打开...", "Open..."))?,
         &m!(app_handle, "open_with_encoding", tr(lang, "按编码打开...", "Open with Encoding..."))?,
         &m!(app_handle, "reload_from_disk", tr(lang, "从磁盘重载", "Reload from Disk"))?,
-        &m!(app_handle, "save", tr(lang, "保存", "Save"), a("CmdOrControl+S"))?,
+        &m!(app_handle, "save", tr(lang, "保存", "Save"))?,
         &m!(app_handle, "save_as", tr(lang, "另存为...", "Save As..."))?,
         &m!(app_handle, "save_copy", tr(lang, "保存副本...", "Save Copy..."))?,
-        &m!(app_handle, "save_all", tr(lang, "全部保存", "Save All"), a("CmdOrControl+Shift+S"))?,
-        &m!(app_handle, "close", tr(lang, "关闭", "Close"), a("CmdOrControl+W"))?,
-        &m!(app_handle, "close_all", tr(lang, "关闭所有", "Close All"), a("CmdOrControl+Shift+W"))?,
+        &m!(app_handle, "save_all", tr(lang, "全部保存", "Save All"))?,
+        &m!(app_handle, "close", tr(lang, "关闭", "Close"))?,
+        &m!(app_handle, "close_all", tr(lang, "关闭所有", "Close All"))?,
         &m!(app_handle, "close_all_but_current", tr(lang, "关闭所有但当前", "Close All but Current"))?,
         &Submenu::with_items(app_handle, tr(lang, "文件操作", "File Operations"), true, &[
             &m!(app_handle, "copy_path", tr(lang, "复制文件路径", "Copy File Path"))?,
@@ -50,22 +37,22 @@ pub fn build_menu(app_handle: &AppHandle, lang: &str) -> tauri::Result<()> {
             &m!(app_handle, "run_command", tr(lang, "运行命令...", "Run Command..."))?,
             &m!(app_handle, "file_props", tr(lang, "文件属性...", "File Properties..."))?,
         ])?,
-        &m!(app_handle, "quit", tr(lang, "退出 MarkPT", "Quit MarkPT"), a("CmdOrControl+Q"))?,
+        &m!(app_handle, "quit", tr(lang, "退出 MarkPT", "Quit MarkPT"))?,
     ])?;
 
     let edit_menu = Submenu::with_items(app_handle, tr(lang, "编辑", "Edit"), true, &[
-        &m!(app_handle, "edit_undo", tr(lang, "撤销", "Undo"), a("CmdOrControl+Z"))?,
-        &m!(app_handle, "edit_redo", tr(lang, "重做", "Redo"), a("CmdOrControl+Shift+Z"))?,
-        &m!(app_handle, "edit_cut", tr(lang, "剪切", "Cut"), a("CmdOrControl+X"))?,
-        &m!(app_handle, "edit_copy", tr(lang, "复制", "Copy"), a("CmdOrControl+C"))?,
-        &m!(app_handle, "edit_paste", tr(lang, "粘贴", "Paste"), a("CmdOrControl+V"))?,
-        &m!(app_handle, "edit_toggle_comment", tr(lang, "切换注释", "Toggle Comment"), a("CmdOrControl+/"))?,
-        &m!(app_handle, "edit_delete_line", tr(lang, "删除当前行", "Delete Current Line"), a("CmdOrControl+D"))?,
-        &m!(app_handle, "edit_duplicate_line", tr(lang, "复制当前行", "Duplicate Current Line"), a("Shift+Alt+D"))?,
-        &m!(app_handle, "edit_move_up", tr(lang, "上移行", "Move Line Up"), a("Alt+Up"))?,
-        &m!(app_handle, "edit_move_down", tr(lang, "下移行", "Move Line Down"), a("Alt+Down"))?,
+        &m!(app_handle, "edit_undo", tr(lang, "撤销", "Undo"))?,
+        &m!(app_handle, "edit_redo", tr(lang, "重做", "Redo"))?,
+        &m!(app_handle, "edit_cut", tr(lang, "剪切", "Cut"))?,
+        &m!(app_handle, "edit_copy", tr(lang, "复制", "Copy"))?,
+        &m!(app_handle, "edit_paste", tr(lang, "粘贴", "Paste"))?,
+        &m!(app_handle, "edit_toggle_comment", tr(lang, "切换注释", "Toggle Comment"))?,
+        &m!(app_handle, "edit_delete_line", tr(lang, "删除当前行", "Delete Current Line"))?,
+        &m!(app_handle, "edit_duplicate_line", tr(lang, "复制当前行", "Duplicate Current Line"))?,
+        &m!(app_handle, "edit_move_up", tr(lang, "上移行", "Move Line Up"))?,
+        &m!(app_handle, "edit_move_down", tr(lang, "下移行", "Move Line Down"))?,
         &Submenu::with_items(app_handle, tr(lang, "大小写转换", "Case Conversion"), true, &[
-            &m!(app_handle, "edit_upper", tr(lang, "转大写", "UPPERCASE"), a("CmdOrControl+Shift+U"))?,
+            &m!(app_handle, "edit_upper", tr(lang, "转大写", "UPPERCASE"))?,
             &m!(app_handle, "edit_lower", tr(lang, "转小写", "lowercase"))?,
             &m!(app_handle, "edit_sentence_case", tr(lang, "句首大写", "Sentence Case"))?,
             &m!(app_handle, "edit_random_case", tr(lang, "随机大小写", "Random Case"))?,
@@ -120,44 +107,44 @@ pub fn build_menu(app_handle: &AppHandle, lang: &str) -> tauri::Result<()> {
     ])?;
 
     let search_menu = Submenu::with_items(app_handle, tr(lang, "查找", "Search"), true, &[
-        &m!(app_handle, "find", tr(lang, "查找...", "Find..."), a("CmdOrControl+F"))?,
-        &m!(app_handle, "find_next", tr(lang, "查找下一个", "Find Next"), a("F3"))?,
-        &m!(app_handle, "find_prev", tr(lang, "查找上一个", "Find Previous"), a("Shift+F3"))?,
-        &m!(app_handle, "replace", tr(lang, "替换...", "Replace..."), a("CmdOrControl+H"))?,
-        &m!(app_handle, "find_in_files", tr(lang, "在文件中查找...", "Find in Files..."), a("CmdOrControl+Shift+F"))?,
+        &m!(app_handle, "find", tr(lang, "查找...", "Find..."))?,
+        &m!(app_handle, "find_next", tr(lang, "查找下一个", "Find Next"))?,
+        &m!(app_handle, "find_prev", tr(lang, "查找上一个", "Find Previous"))?,
+        &m!(app_handle, "replace", tr(lang, "替换...", "Replace..."))?,
+        &m!(app_handle, "find_in_files", tr(lang, "在文件中查找...", "Find in Files..."))?,
         &m!(app_handle, "batch_find_replace", tr(lang, "批量查找替换...", "Batch Find/Replace..."))?,
         &m!(app_handle, "multi_search", tr(lang, "多文档查找替换...", "Multi-Document Search..."))?,
-        &m!(app_handle, "goto", tr(lang, "转到行...", "Go to Line..."), a("CmdOrControl+G"))?,
+        &m!(app_handle, "goto", tr(lang, "转到行...", "Go to Line..."))?,
         &m!(app_handle, "jump_to_bracket", tr(lang, "跳转到匹配括号", "Jump to Bracket"))?,
         &m!(app_handle, "select_to_bracket", tr(lang, "选中到匹配括号", "Select to Bracket"))?,
         &m!(app_handle, "mark_all", tr(lang, "标记所有匹配", "Mark All Matches"))?,
         &m!(app_handle, "unmark_all", tr(lang, "取消所有标记", "Unmark All"))?,
-        &m!(app_handle, "next_bookmark", tr(lang, "下一书签", "Next Bookmark"), a("F2"))?,
-        &m!(app_handle, "prev_bookmark", tr(lang, "上一书签", "Previous Bookmark"), a("Shift+F2"))?,
+        &m!(app_handle, "next_bookmark", tr(lang, "下一书签", "Next Bookmark"))?,
+        &m!(app_handle, "prev_bookmark", tr(lang, "上一书签", "Previous Bookmark"))?,
         &m!(app_handle, "clear_bookmarks", tr(lang, "清除所有书签", "Clear All Bookmarks"))?,
     ])?;
 
     let view_menu = Submenu::with_items(app_handle, tr(lang, "视图", "View"), true, &[
-        &m!(app_handle, "toggle_sidebar", tr(lang, "切换侧边栏", "Toggle Sidebar"), a("CmdOrControl+\\"))?,
-        &m!(app_handle, "command_palette", tr(lang, "命令面板...", "Command Palette..."), a("CmdOrControl+P"))?,
+        &m!(app_handle, "toggle_sidebar", tr(lang, "切换侧边栏", "Toggle Sidebar"))?,
+        &m!(app_handle, "command_palette", tr(lang, "命令面板...", "Command Palette..."))?,
         &m!(app_handle, "split_horizontal", tr(lang, "水平分屏", "Split Horizontal"))?,
         &m!(app_handle, "split_vertical", tr(lang, "垂直分屏", "Split Vertical"))?,
         &m!(app_handle, "split_close", tr(lang, "关闭分屏", "Close Split"))?,
-        &m!(app_handle, "function_list", tr(lang, "函数列表...", "Function List..."), a("CmdOrControl+Shift+O"))?,
-        &m!(app_handle, "doc_switcher", tr(lang, "切换文档...", "Switch Document..."), a("CmdOrControl+Tab"))?,
-        &m!(app_handle, "toggle_word_wrap", tr(lang, "自动换行", "Word Wrap"), a("Alt+Z"))?,
-        &m!(app_handle, "zoom_in", tr(lang, "放大", "Zoom In"), a("CmdOrControl+="))?,
-        &m!(app_handle, "zoom_out", tr(lang, "缩小", "Zoom Out"), a("CmdOrControl+-"))?,
-        &m!(app_handle, "zoom_reset", tr(lang, "重置缩放", "Reset Zoom"), a("CmdOrControl+0"))?,
-        &m!(app_handle, "full_screen", tr(lang, "全屏", "Full Screen"), a("F11"))?,
+        &m!(app_handle, "function_list", tr(lang, "函数列表...", "Function List..."))?,
+        &m!(app_handle, "doc_switcher", tr(lang, "切换文档...", "Switch Document..."))?,
+        &m!(app_handle, "toggle_word_wrap", tr(lang, "自动换行", "Word Wrap"))?,
+        &m!(app_handle, "zoom_in", tr(lang, "放大", "Zoom In"))?,
+        &m!(app_handle, "zoom_out", tr(lang, "缩小", "Zoom Out"))?,
+        &m!(app_handle, "zoom_reset", tr(lang, "重置缩放", "Reset Zoom"))?,
+        &m!(app_handle, "full_screen", tr(lang, "全屏", "Full Screen"))?,
         &m!(app_handle, "always_on_top", tr(lang, "窗口置顶", "Always on Top"))?,
         &m!(app_handle, "postit_mode", tr(lang, "便利贴模式", "Post-it Mode"))?,
         &Submenu::with_items(app_handle, tr(lang, "工具窗口", "Tool Windows"), true, &[
             &m!(app_handle, "markdown_preview", tr(lang, "Markdown 预览...", "Markdown Preview..."))?,
             &m!(app_handle, "csv_viewer", tr(lang, "CSV/TSV 查看...", "CSV/TSV Viewer..."))?,
             &m!(app_handle, "regex_tester", tr(lang, "正则测试器...", "Regex Tester..."))?,
-            &m!(app_handle, "hex_viewer", tr(lang, "十六进制查看...", "Hex Viewer..."), a("CmdOrControl+Shift+H"))?,
-            &m!(app_handle, "char_stats", tr(lang, "字符统计...", "Character Stats..."), a("CmdOrControl+Shift+C"))?,
+            &m!(app_handle, "hex_viewer", tr(lang, "十六进制查看...", "Hex Viewer..."))?,
+            &m!(app_handle, "char_stats", tr(lang, "字符统计...", "Character Stats..."))?,
         ])?,
         &Submenu::with_items(app_handle, tr(lang, "标签排序", "Sort Tabs"), true, &[
             &m!(app_handle, "window_sort_name", tr(lang, "按名称", "by Name"))?,
@@ -210,16 +197,16 @@ pub fn build_menu(app_handle: &AppHandle, lang: &str) -> tauri::Result<()> {
     ])?;
 
     let settings_menu = Submenu::with_items(app_handle, tr(lang, "设置", "Settings"), true, &[
-        &m!(app_handle, "settings", tr(lang, "首选项...", "Preferences..."), a("CmdOrControl+,"))?,
+        &m!(app_handle, "settings", tr(lang, "首选项...", "Preferences..."))?,
         &m!(app_handle, "shortcut_mapper", tr(lang, "快捷键映射...", "Shortcut Mapper..."))?,
-        &m!(app_handle, "shortcuts", tr(lang, "快捷键帮助...", "Shortcut Help..."), a("CmdOrControl+/"))?,
+        &m!(app_handle, "shortcuts", tr(lang, "快捷键帮助...", "Shortcut Help..."))?,
         &m!(app_handle, "snippets", tr(lang, "代码片段...", "Snippets..."))?,
         &m!(app_handle, "clipboard_history", tr(lang, "剪贴板历史...", "Clipboard History..."))?,
         &m!(app_handle, "plugin_manager", tr(lang, "插件管理...", "Plugin Manager..."))?,
     ])?;
 
     let tools_menu = Submenu::with_items(app_handle, tr(lang, "工具", "Tools"), true, &[
-        &m!(app_handle, "text_transform", tr(lang, "文本转换...", "Text Transform..."), a("CmdOrControl+Shift+R"))?,
+        &m!(app_handle, "text_transform", tr(lang, "文本转换...", "Text Transform..."))?,
         &m!(app_handle, "macro_start_stop", tr(lang, "开始/停止录制宏", "Start/Stop Macro Recording"))?,
         &m!(app_handle, "macro_playback", tr(lang, "播放宏", "Playback Macro"))?,
         &m!(app_handle, "run_macro_multiple", tr(lang, "多次运行宏...", "Run Macro Multiple..."))?,

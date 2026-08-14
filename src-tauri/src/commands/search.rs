@@ -3,6 +3,7 @@ use regex::Regex;
 use std::fs;
 use std::sync::Arc;
 use walkdir::WalkDir;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 const MAX_RESULTS: usize = 5000;
 const MAX_LINE_LENGTH: usize = 500;
@@ -190,10 +191,11 @@ pub fn search_in_file(
         }
     }
 
+    let results_len = results.len();
     Ok(SearchSummary {
         total_matches,
         files_matched: if total_matches > 0 { 1 } else { 0 },
         results,
-        truncated: results.len() >= MAX_RESULTS,
+        truncated: results_len >= MAX_RESULTS,
     })
 }
